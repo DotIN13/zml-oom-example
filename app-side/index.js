@@ -11,7 +11,8 @@ AppSideService(
 
       // Adjust the fetch method to your way of file hosting
       fetch({
-        url: "http://192.168.1.129:8080/shanghai-20231119-mini-fbs/15/27436/13393.mvt",
+        // url: "http://192.168.1.129:8080/shanghai-20231119-mini-fbs/15/27436/13393.mvt",
+        url: "http://192.168.5.117:8080/13393.mvt",
         method: "GET",
         headers: {
           "Content-Type": "application/x-protobuf",

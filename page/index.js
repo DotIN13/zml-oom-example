@@ -6,6 +6,10 @@ import {
   FETCH_RESULT_TEXT,
 } from "zosLoader:./index.[pf].layout.js";
 
+import { EventBus } from "@zos/utils";
+
+const eventBus = new EventBus();
+let startTime = null;
 const logger = Logger.getLogger("fetch_api");
 
 let textWidget;
@@ -13,18 +17,28 @@ Page(
   BasePage({
     state: {},
     build() {
-      this.count = 10; // Adjust the number of iterations
+      this.count = 50; // Adjust the number of iterations
+
+      eventBus.on("fetch", () => this.fetchData());
 
       hmUI.createWidget(hmUI.widget.BUTTON, {
         ...FETCH_BUTTON,
         click_func: (button_widget) => {
           logger.log("click button");
-          this.fetchData();
+          this.count = 50;
+          startTime = Date.now();
+          eventBus.emit("fetch", null);
         },
       });
     },
     fetchData() {
       this.count--;
+      // break if count is negative
+      if (this.count < 0) {
+        const elapsed = Date.now() - startTime;
+        textWidget.setProperty(hmUI.prop.TEXT, elapsed / 1000 + "s");
+        return;
+      }
 
       this.request({
         method: "GET_DATA",
@@ -44,8 +58,7 @@ Page(
             textWidget.setProperty(hmUI.prop.TEXT, text);
           }
 
-          // If count is still positive, continue to request data from the side app
-          if (this.count > 0) this.fetchData();
+          eventBus.emit("fetch", null);
         })
         .catch((res) => {});
     },
