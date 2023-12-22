@@ -19,7 +19,14 @@ Page(
     build() {
       this.count = 50; // Adjust the number of iterations
 
-      eventBus.on("fetch", () => this.fetchData());
+      eventBus.on("fetch", () => {
+        Promise.allSettled([
+          this.fetchData(),
+          this.fetchData(),
+          this.fetchData(),
+          this.fetchData(),
+        ]).then(() => eventBus.emit("fetch", null));
+      });
 
       hmUI.createWidget(hmUI.widget.BUTTON, {
         ...FETCH_BUTTON,
@@ -37,10 +44,12 @@ Page(
       if (this.count < 0) {
         const elapsed = Date.now() - startTime;
         textWidget.setProperty(hmUI.prop.TEXT, elapsed / 1000 + "s");
-        return;
+        return new Promise((res) => res());
       }
 
-      this.request({
+      logger.debug(`Requesting file, ${this.count} files remaining.`)
+
+      return this.request({
         method: "GET_DATA",
       })
         .then((data) => {
@@ -57,8 +66,6 @@ Page(
           } else {
             textWidget.setProperty(hmUI.prop.TEXT, text);
           }
-
-          eventBus.emit("fetch", null);
         })
         .catch((res) => {});
     },
